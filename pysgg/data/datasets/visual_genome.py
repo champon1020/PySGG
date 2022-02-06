@@ -93,7 +93,7 @@ class VGDataset(torch.utils.data.Dataset):
 
         self.categories = {i: self.ind_to_classes[i]
                            for i in range(len(self.ind_to_classes))}
-                           
+
         self.split_mask, self.gt_boxes, self.gt_classes, self.gt_attributes, self.relationships = load_graphs(
             self.roidb_file, self.split, num_im, num_val_im=num_val_im,
             filter_empty_rels=False if not cfg.MODEL.RELATION_ON and split == "train" else True,
@@ -209,7 +209,7 @@ class VGDataset(torch.utils.data.Dataset):
         rel_counter = Counter()
 
         for i in tqdm(self.idx_list):
-            
+
             relation = self.relationships[i].copy()  # (num_rel, 3)
             if self.filter_duplicate_rels:
                 # Filter out dupes!
@@ -223,7 +223,7 @@ class VGDataset(torch.utils.data.Dataset):
                 relation = np.array(relation, dtype=np.int32)
 
             if self.repeat_dict is not None:
-                relation, _ = apply_resampling(i, 
+                relation, _ = apply_resampling(i,
                                                relation,
                                                self.repeat_dict,
                                                self.drop_rate,)
@@ -292,7 +292,8 @@ class VGDataset(torch.utils.data.Dataset):
         img_info = self.img_info[index]
         w, h = img_info['width'], img_info['height']
         # important: recover original box from BOX_SCALE
-        box = self.gt_boxes[index] / BOX_SCALE * max(w, h)
+        # box = self.gt_boxes[index] / BOX_SCALE * max(w, h)
+        box = self.gt_boxes[index]
         box = torch.from_numpy(box).reshape(-1, 4)  # guard against no boxes
         target = BoxList(box, (w, h), 'xyxy')  # xyxy
 
@@ -313,7 +314,7 @@ class VGDataset(torch.utils.data.Dataset):
 
         relation_non_masked = None
         if self.repeat_dict is not None:
-            relation, relation_non_masked = apply_resampling(index, 
+            relation, relation_non_masked = apply_resampling(index,
                                                               relation,
                                                              self.repeat_dict,
                                                              self.drop_rate,)
@@ -333,12 +334,12 @@ class VGDataset(torch.utils.data.Dataset):
                 if (random.random() > 0.5):
                     relation_map[int(relation[i, 0]), int(relation[i, 1])] = int(relation[i, 2])
                     if relation_map_non_masked is not None  :
-                        relation_map_non_masked[int(relation_non_masked[i, 0]), 
+                        relation_map_non_masked[int(relation_non_masked[i, 0]),
                                                 int(relation_non_masked[i, 1])] = int(relation_non_masked[i, 2])
             else:
                 relation_map[int(relation[i, 0]), int(relation[i, 1])] = int(relation[i, 2])
                 if relation_map_non_masked is not None  :
-                    relation_map_non_masked[int(relation_non_masked[i, 0]), 
+                    relation_map_non_masked[int(relation_non_masked[i, 0]),
                                             int(relation_non_masked[i, 1])] = int(relation_non_masked[i, 2])
 
 
@@ -438,7 +439,8 @@ def correct_img_info(img_dir, image_file):
         data = json.load(f)
     for i in tqdm(range(len(data)), total=len(data)):
         img = data[i]
-        basename = '{}.jpg'.format(img['image_id'])
+        # basename = '{}.jpg'.format(img['image_id'])
+        basename = '{}.{}'.format(img['image_id'], img['ext'])
         filename = os.path.join(img_dir, basename)
         img_data = Image.open(filename).convert("RGB")
         if img['width'] != img_data.size[0] or img['height'] != img_data.size[1]:
@@ -490,7 +492,8 @@ def load_image_filenames(img_dir, image_file, check_img_file):
     fns = []
     img_info = []
     for i, img in enumerate(im_data):
-        basename = '{}.jpg'.format(img['image_id'])
+        # basename = '{}.jpg'.format(img['image_id'])
+        basename = '{}.{}'.format(img['image_id'], img['ext'])
         if basename in corrupted_ims:
             continue
 
@@ -498,8 +501,11 @@ def load_image_filenames(img_dir, image_file, check_img_file):
         if os.path.exists(filename) or not check_img_file:
             fns.append(filename)
             img_info.append(img)
-    assert len(fns) == 108073
-    assert len(img_info) == 108073
+    # assert len(fns) == 108073
+    # assert len(img_info) == 108073
+    print("fns:", len(fns))
+    print("img_info:", len(img_info))
+    assert len(fns) == len(img_info)
     return fns, img_info
 
 

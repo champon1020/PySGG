@@ -52,7 +52,7 @@ def get_dataset_statistics(cfg):
         factory = getattr(D, data["factory"])
         args = data["args"]
         dataset = factory(**args)
-        if "VG_stanford" in dataset_name:
+        if "VG_stanford" in dataset_name or "AG" in dataset_name or "VidVRD" in dataset_name:
             get_dataset_distribution(dataset, dataset_name)
         statistics.append(dataset.get_statistics())
     logger.info('finish')
@@ -79,7 +79,7 @@ def get_dataset_distribution(train_data, dataset_name):
         train_data ([type]): [description]
         dataset_name ([type]): [description]
     """
-    # 
+    #
     if is_main_process():
         print("Get relation class frequency distribution on dataset.")
         pred_counter = Counter()
@@ -96,7 +96,7 @@ def get_dataset_distribution(train_data, dataset_name):
             pickle.dump(pred_counter, f)
 
         from pysgg.data.datasets.visual_genome import HEAD, TAIL, BODY
-        
+
         head = HEAD
         body = BODY
         tail = TAIL
@@ -317,7 +317,3 @@ def make_data_loader(cfg, mode='train', is_distributed=False, start_iter=0):
         assert len(data_loaders) == 1
         return data_loaders[0]
     return data_loaders
-
-
-
-

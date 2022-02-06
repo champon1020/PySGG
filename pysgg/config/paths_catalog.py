@@ -128,6 +128,18 @@ class DatasetCatalog(object):
             "ann_file": "openimages/open_image_v6/annotations/vrd-%s-anno.json",
             "cate_info_file": "openimages/open_image_v6/annotations/categories_dict.json",
         },
+        "AG": {
+            "img_dir": "ag/frames",
+            "roidb_file": "ag/VG-SGG.h5",
+            "dict_file": "ag/VG-SGG-dicts.json",
+            "image_file": "ag/image_data.json",
+        },
+        "VidVRD": {
+            "img_dir": "vidvrd/frames",
+            "roidb_file": "vidvrd/VG-SGG.h5",
+            "dict_file": "vidvrd/VG-SGG-dicts.json",
+            "image_file": "vidvrd/image_data.json",
+        },
     }
 
     @staticmethod
@@ -154,7 +166,7 @@ class DatasetCatalog(object):
                 factory="PascalVOCDataset",
                 args=args,
             )
-        elif ("VG" in name) or ('GQA' in name):
+        elif ("VG" in name) or ('GQA' in name) or ("AG" in name) or ("VidVRD" in name):
             # name should be something like VG_stanford_filtered_train
             p = name.rfind("_")
             name, split = name[:p], name[p + 1:]
