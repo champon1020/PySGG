@@ -20,7 +20,7 @@ class GatingModel(nn.Module):
         self.union_input_dim = union_input_dim
         self.hidden_dim = hidden_dim
 
-        
+
 
         self.ws = nn.Sequential(
             # nn.BatchNorm1d(self.entity_input_dim),
@@ -214,6 +214,8 @@ class GPSNetContext(nn.Module):
         self.update_step = num_iter
         self.pooling_dim = self.cfg.MODEL.ROI_RELATION_HEAD.CONTEXT_POOLING_DIM
         self.num_rel_cls = self.cfg.MODEL.ROI_RELATION_HEAD.NUM_CLASSES
+        self.filter_the_mp_instance = False
+        self.relness_weighting_mp = False
 
         if self.update_step < 1:
             print(
