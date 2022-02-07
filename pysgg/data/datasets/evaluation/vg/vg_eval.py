@@ -13,7 +13,7 @@ from tqdm import tqdm
 from pysgg.data.datasets.evaluation.coco.coco_eval import COCOResults
 from pysgg.data.datasets.evaluation.vg.sgg_eval import SGRecall, SGNoGraphConstraintRecall, \
     SGZeroShotRecall, SGPairAccuracy, SGMeanRecall, SGStagewiseRecall, SGNGMeanRecall
-from pysgg.data.datasets.visual_genome import HEAD, TAIL, BODY
+from pysgg.data.datasets.visual_genome import longtail_part_dict
 
 eval_times = 0
 
@@ -276,6 +276,7 @@ def do_vg_evaluation(
                 cate_num = []
                 cate_set = []
                 counter_name = []
+                HEAD, BODY, TAIL = longtail_part_dict(cfg)
                 for cate_set_idx, name_set in enumerate([HEAD, BODY, TAIL]):
                     for cate_id in name_set:
                         cate_set.append(cate_set_idx)
@@ -314,7 +315,7 @@ def do_vg_evaluation(
 
         longtail_part_res_dict, longtail_part_res_str = longtail_part_eval(eval_mean_recall, mode)
         ng_longtail_part_res_dict, ng_longtail_part_res_str = longtail_part_eval(eval_ng_mean_recall, mode)
-        
+
         # print result
         result_str += eval_recall.generate_print_string(mode)
         result_str += eval_nog_recall.generate_print_string(mode)
@@ -329,7 +330,7 @@ def do_vg_evaluation(
                                         generate_eval_res_dict(eval_nog_recall, mode),
                                         generate_eval_res_dict(eval_zeroshot_recall, mode),
                                         generate_eval_res_dict(eval_mean_recall, mode),
-                                        generate_eval_res_dict(eval_ng_mean_recall, mode), 
+                                        generate_eval_res_dict(eval_ng_mean_recall, mode),
                                         longtail_part_res_dict, ng_longtail_part_res_dict])
 
         if cfg.MODEL.ROI_RELATION_HEAD.USE_GT_BOX:
@@ -412,7 +413,7 @@ def evaluate_relation_of_one_image(groundtruth, prediction, global_container, ev
     local_container['obj_scores'] = prediction.get_field('pred_scores').detach().cpu().numpy()  # (#pred_objs, )
 
     # to calculate accuracy, only consider those gt pairs
-    # This metric is used by "Graphical Contrastive Losses for Scene Graph Parsing" 
+    # This metric is used by "Graphical Contrastive Losses for Scene Graph Parsing"
     # for sgcls and predcls
     if mode != 'sgdet':
         if evaluator.get("eval_pair_accuracy") is not None:

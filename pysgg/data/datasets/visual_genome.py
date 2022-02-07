@@ -22,17 +22,18 @@ from pysgg.data.datasets.bi_lvl_rsmp import resampling_dict_generation, apply_re
 
 BOX_SCALE = 1024  # Scale at which we have the boxes
 
-HEAD = []
-BODY = []
-TAIL = []
-
-for i, cate in enumerate(cfg.MODEL.ROI_RELATION_HEAD.LONGTAIL_PART_DICT):
-    if cate == 'h':
-        HEAD.append(i)
-    elif cate == 'b':
-        BODY.append(i)
-    elif cate == 't':
-        TAIL.append(i)
+def longtail_part_dict(cfg):
+    HEAD = []
+    BODY = []
+    TAIL = []
+    for i, cate in enumerate(cfg.MODEL.ROI_RELATION_HEAD.LONGTAIL_PART_DICT):
+        if cate == 'h':
+            HEAD.append(i)
+        elif cate == 'b':
+            BODY.append(i)
+        elif cate == 't':
+            TAIL.append(i)
+    return HEAD, BODY, TAIL
 
 
 # HEAD = [31, 20, 48, 30]

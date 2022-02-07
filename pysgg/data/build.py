@@ -53,7 +53,7 @@ def get_dataset_statistics(cfg):
         args = data["args"]
         dataset = factory(**args)
         if "VG_stanford" in dataset_name or "AG" in dataset_name or "VidVRD" in dataset_name:
-            get_dataset_distribution(dataset, dataset_name)
+            get_dataset_distribution(cfg, dataset, dataset_name)
         statistics.append(dataset.get_statistics())
     logger.info('finish')
 
@@ -71,7 +71,7 @@ def get_dataset_statistics(cfg):
     return result
 
 
-def get_dataset_distribution(train_data, dataset_name):
+def get_dataset_distribution(cfg, train_data, dataset_name):
     """save relation frequency distribution after the sampling etc processing
     the data distribution that model will be trained on it
 
@@ -95,7 +95,9 @@ def get_dataset_distribution(train_data, dataset_name):
         with open(os.path.join(cfg.OUTPUT_DIR, "pred_counter.pkl"), 'wb') as f:
             pickle.dump(pred_counter, f)
 
-        from pysgg.data.datasets.visual_genome import HEAD, TAIL, BODY
+        from pysgg.data.datasets.visual_genome import longtail_part_dict
+
+        HEAD, BODY, TAIL = longtail_part_dict(cfg)
 
         head = HEAD
         body = BODY
