@@ -12,6 +12,7 @@ from ..utils.comm import all_gather
 from ..utils.comm import is_main_process, get_world_size
 from ..utils.comm import synchronize
 from ..utils.timer import Timer, get_time_str
+from ..structures.bounding_box import BoxList
 
 
 def compute_on_dataset(model, data_loader, device, synchronize_gather=True, timer=None, logger=None):
@@ -38,7 +39,15 @@ def compute_on_dataset(model, data_loader, device, synchronize_gather=True, time
                 output = im_detect_bbox_aug(model, images, device)
             else:
                 # relation detection needs the targets
-                output = model(images.to(device), targets, logger=logger)
+                try:
+                    output = model(images.to(device), targets, logger=logger)
+                except:
+                    box = BoxList(torch.tensor([0, 0, 0, 0]).reshape(-1, 4), output[0].size)
+                    box.add_field("pred_scores", torch.tensor([0]))
+                    box.add_field("pred_labels", torch.tensor([0]))
+                    box.add_field("rel_pair_idxs", torch.tensor([0, 0]).reshape(-1, 2))
+                    box.add_field("pred_rel_scores", torch.tensor([0, 0]).reshape(-1, 2))
+                    output = [box]
             if timer:
                 if not cfg.MODEL.DEVICE == 'cpu':
                     torch.cuda.synchronize()
@@ -74,7 +83,7 @@ def _accumulate_predictions_from_multiple_gpus(predictions_per_gpu, synchronize_
     # convert a dict where the key is the index in a list
     image_ids = list(sorted(predictions.keys()))
     if len(image_ids) != image_ids[-1] + 1:
-        
+
         logger = logging.getLogger("pysgg.inference")
         logger.warning(
             "WARNING! WARNING! WARNING! WARNING! WARNING! WARNING!"
