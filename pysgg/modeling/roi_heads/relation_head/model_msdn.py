@@ -141,7 +141,8 @@ class MSDNContext(nn.Module):
             cfg.MODEL.ROI_RELATION_HEAD.RELATION_PROPOSAL_MODEL.METHOD
         )
 
-        self.vail_pair_num = cfg.MODEL.ROI_RELATION_HEAD.MSDN_MODULE.MP_VALID_PAIRS_NUM
+        # self.vail_pair_num = cfg.MODEL.ROI_RELATION_HEAD.MSDN_MODULE.MP_VALID_PAIRS_NUM
+        self.share_parameters_each_iter = False
 
 
         # decrease the dimension before mp
@@ -170,10 +171,10 @@ class MSDNContext(nn.Module):
             MessagePassingUnit = MessagePassingUnit_v1
 
 
-        self.gate_sub2pred = MessagePassingUnit(self.hidden_dim, gate_width)
-        self.gate_obj2pred =MessagePassingUnit(self.hidden_dim, gate_width)
-        self.gate_pred2sub = MessagePassingUnit(self.hidden_dim, gate_width)
-        self.gate_pred2obj = MessagePassingUnit(self.hidden_dim, gate_width)
+        self.gate_sub2pred = [MessagePassingUnit(self.hidden_dim, gate_width)]
+        self.gate_obj2pred = [MessagePassingUnit(self.hidden_dim, gate_width)]
+        self.gate_pred2sub = [MessagePassingUnit(self.hidden_dim, gate_width)]
+        self.gate_pred2obj = [MessagePassingUnit(self.hidden_dim, gate_width)]
 
 
         self.object_msg_fusion = MessageFusion(self.hidden_dim, dropout)
@@ -435,7 +436,7 @@ class MSDNContext(nn.Module):
                     GRU_input_feature_phrase, rel_feature4iter[t]
                 )
             )
-            
+
         refined_inst_features = inst_feature4iter[-1]
         refined_rel_features = rel_feature4iter[-1]
 
