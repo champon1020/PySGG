@@ -676,12 +676,19 @@ def main():
     now = datetime.datetime.now()
     time_str = now.strftime("%Y-%m-%d_%H")
 
+    """
     cfg.OUTPUT_DIR = os.path.join(
         cfg.OUTPUT_DIR,
         f"{mode}-{cfg.MODEL.ROI_RELATION_HEAD.PREDICTOR}",
         f"({time_str}){cfg.EXPERIMENT_NAME}"
         + f"{'(resampling)' if cfg.MODEL.ROI_RELATION_HEAD.DATA_RESAMPLING else ''}"
         + f"{'(debug)' if cfg.DEBUG else ''}",
+    )
+    """
+    cfg.OUTPUT_DIR = os.path.join(
+        cfg.OUTPUT_DIR,
+        f"{mode}-{cfg.MODEL.ROI_RELATION_HEAD.PREDICTOR}"
+        + f"{'_resampling' if cfg.MODEL.ROI_RELATION_HEAD.DATA_RESAMPLING else ''}"
     )
 
     cfg.freeze()
