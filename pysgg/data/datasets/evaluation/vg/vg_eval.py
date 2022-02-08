@@ -38,6 +38,8 @@ def do_vg_evaluation(
             mode = 'predcls'
         else:
             mode = 'sgcls'
+    elif cfg.TEST.MODE == "phrdet":
+        mode = "phrdet"
     else:
         mode = 'sgdet'
 

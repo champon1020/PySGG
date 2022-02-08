@@ -757,6 +757,7 @@ _C.SOLVER.IMS_PER_BATCH = 16
 # Specific test options
 # ---------------------------------------------------------------------------- #
 _C.TEST = CN()
+_C.TEST.MODE = "sgdet"
 _C.TEST.EXPECTED_RESULTS = []
 _C.TEST.EXPECTED_RESULTS_SIGMA_TOL = 4
 # Number of images per batch

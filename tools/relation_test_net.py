@@ -45,6 +45,7 @@ def main():
         help="path to config file",
     )
     parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--dataset", type=str, choices=("ag", "vidvrd"))
     parser.add_argument(
         "opts",
         help="Modify config options using the command-line",
@@ -66,6 +67,12 @@ def main():
 
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+
+    if args.dataset == "ag":
+        cfg.MODEL.ROI_RELATION_HEAD.LONGTAIL_PART_DICT = [None, 'h', 'h', 'h', 't', 'h', 'h', 'h', 'h', 'b', 't', 't', 't', 't', 't', 'h', 'b', 't', 'h', 'b', 'h', 'b', 'h', 't', 't', 't', 't']
+    elif args.dataset == "vidvrd":
+        cfg.MODEL.ROI_RELATION_HEAD.LONGTAIL_PART_DICT = [None, 'h', 't', 't', 't', 't', 't', 'b', 'b', 't', 'b', 't', 'b', 'b', 't', 't', 't', 't', 't', 't', 'b', 't', 'h', 't', 'b', 'b', 't', 't', 't', 'b', 't', 't', 't', 't', 't', 't', 't', 't', 'b', 'b', 't', 't', 't', 't', 'b', 't', 't', 't', 'b', 't', 'h', 't', 'b', 't', 'b', 'b', 't', 't', 't', 't', 't', 'b', 't', 't', 't', 'h', 'h', 't', 'b', 't', 't', 't', 't', 't', 't', 't', 'b', 't', 't', 't', 't', 't', 't', 't', 't', 'b', 't', 'b', 't', 't', 'b', 't', 't', 't', 't', 't', 'h', 'h', 't', 'b', 't', 'b', 't', 't', 't', 't', 't', 'b', 't', 't', 't', 'h', 't', 't', 't', 'b', 't', 't', 't', 'b', 't', 'b', 't', 'b', 't', 'b', 'b', 't', 't', 't', 't', 'b', 'b']
+
     cfg.freeze()
 
     save_dir = ""
