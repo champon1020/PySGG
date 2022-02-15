@@ -45,9 +45,11 @@ class GeneralizedRCNN(nn.Module):
         """
         if self.training and targets is None:
             raise ValueError("In training mode, targets should be passed")
+
         images = to_image_list(images)
         features = self.backbone(images.tensors)
         proposals, proposal_losses = self.rpn(images, features, targets)
+
         if self.roi_heads:
             x, result, detector_losses = self.roi_heads(features, proposals, targets, logger)
         else:
@@ -60,7 +62,7 @@ class GeneralizedRCNN(nn.Module):
             losses = {}
             losses.update(detector_losses)
             if not self.cfg.MODEL.RELATION_ON:
-                # During the relationship training stage, the rpn_head should be fixed, and no loss. 
+                # During the relationship training stage, the rpn_head should be fixed, and no loss.
                 losses.update(proposal_losses)
             return losses
 

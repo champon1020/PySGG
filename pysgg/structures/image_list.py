@@ -46,6 +46,8 @@ def to_image_list(tensors, size_divisible=0):
         assert tensors.dim() == 4
         image_sizes = [tensor.shape[-2:] for tensor in tensors]
         return ImageList(tensors, image_sizes)
+    elif isinstance(tensors, (tuple, list)) and isinstance(tensors[0], (tuple, list)):
+        return to_image_list(tensors[0], size_divisible=size_divisible)
     elif isinstance(tensors, (tuple, list)):
         max_size = tuple(max(s) for s in zip(*[img.shape for img in tensors]))
 

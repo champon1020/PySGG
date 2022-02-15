@@ -29,4 +29,3 @@ class BBoxAugCollator(object):
 
     def __call__(self, batch):
         return list(zip(*batch))
-

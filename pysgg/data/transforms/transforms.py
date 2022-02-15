@@ -54,34 +54,34 @@ class Resize(object):
 
         return (oh, ow)
 
-    def __call__(self, image, target=None):
-        size = self.get_size(image.size)
-        image = F.resize(image, size)
+    def __call__(self, images, target=None):
+        size = self.get_size(images[-1].size)
+        images = [F.resize(image, size) for image in images]
         if target is None:
-            return image
-        target = target.resize(image.size)
-        return image, target
+            return images
+        target = target.resize(images[-1].size)
+        return images, target
 
 
 class RandomHorizontalFlip(object):
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, image, target):
+    def __call__(self, images, target):
         if random.random() < self.prob:
-            image = F.hflip(image)
+            images = [F.hflip(image) for image in images]
             target = target.transpose(0)
-        return image, target
+        return images, target
 
 class RandomVerticalFlip(object):
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, image, target):
+    def __call__(self, images, target):
         if random.random() < self.prob:
-            image = F.vflip(image)
+            image = [F.vflip(image) for image in images]
             target = target.transpose(1)
-        return image, target
+        return images, target
 
 class ColorJitter(object):
     def __init__(self,
@@ -96,14 +96,14 @@ class ColorJitter(object):
             saturation=saturation,
             hue=hue,)
 
-    def __call__(self, image, target):
-        image = self.color_jitter(image)
-        return image, target
+    def __call__(self, images, target):
+        images = [self.color_jitter(image) for image in images]
+        return images, target
 
 
 class ToTensor(object):
-    def __call__(self, image, target):
-        return F.to_tensor(image), target
+    def __call__(self, images, target):
+        return [F.to_tensor(image) for image in images], target
 
 
 class Normalize(object):
@@ -112,10 +112,11 @@ class Normalize(object):
         self.std = std
         self.to_bgr255 = to_bgr255
 
-    def __call__(self, image, target=None):
-        if self.to_bgr255:
-            image = image[[2, 1, 0]] * 255
-        image = F.normalize(image, mean=self.mean, std=self.std)
+    def __call__(self, images, target=None):
+        for i in range(len(images)):
+            if self.to_bgr255:
+                images[i] = images[i][[2, 1, 0]] * 255
+            images[i] = F.normalize(images[i], mean=self.mean, std=self.std)
         if target is None:
-            return image
-        return image, target
+            return images
+        return images, target

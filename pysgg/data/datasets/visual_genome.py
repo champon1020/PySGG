@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import os.path as op
 import random
 from collections import defaultdict, OrderedDict, Counter
 import pickle
@@ -19,6 +20,7 @@ from pysgg.structures.boxlist_ops import boxlist_iou, split_boxlist, cat_boxlist
 from pysgg.utils.comm import get_rank, synchronize
 
 from pysgg.data.datasets.bi_lvl_rsmp import resampling_dict_generation, apply_resampling
+
 
 BOX_SCALE = 1024  # Scale at which we have the boxes
 
@@ -46,7 +48,7 @@ class VGDataset(torch.utils.data.Dataset):
 
     def __init__(self, split, img_dir, roidb_file, dict_file, image_file, transforms=None,
                  filter_empty_rels=True, num_im=-1, num_val_im=5000, check_img_file=False,
-                 filter_duplicate_rels=True, filter_non_overlap=True, flip_aug=False):
+                 filter_duplicate_rels=True, filter_non_overlap=True, flip_aug=False, video_input=False):
         """
         Torch dataset for VisualGenome
         Parameters:
@@ -82,6 +84,7 @@ class VGDataset(torch.utils.data.Dataset):
         self.transforms = transforms
         self.repeat_dict = None
         self.check_img_file = check_img_file
+        self.video_input = video_input
         # self.remove_tail_classes = False
 
 
@@ -154,7 +157,18 @@ class VGDataset(torch.utils.data.Dataset):
         if self.repeat_dict is not None:
             index = self.idx_list[index]
 
-        img = Image.open(self.filenames[index]).convert("RGB")
+        imgs = []
+
+        image_filename = self.filenames[index]
+        prev_image_id, ext = op.splitext(op.basename(image_filename))
+        prev_image_id = int(prev_image_id) - 1
+        if prev_image_id > 0:
+            prev_image_filename = op.join(op.dirname(image_filename), f"{prev_image_id:06d}{ext}")
+            prev_img = Image.open(prev_image_filename).convert("RGB")
+            imgs.append(prev_img)
+        img = Image.open(image_filename).convert("RGB")
+        imgs.append(img)
+
         if img.size[0] != self.img_info[index]['width'] or img.size[1] != self.img_info[index]['height']:
             print('=' * 20, ' ERROR index ', str(index), ' ', str(img.size), ' ', str(self.img_info[index]['width']),
                   ' ', str(self.img_info[index]['height']), ' ', '=' * 20)
@@ -179,7 +193,7 @@ class VGDataset(torch.utils.data.Dataset):
                 targets_len = len(target)
                 target.add_field("scores", torch.zeros((len(target))))
                 all_boxes = cat_boxlist([target, pre_compute_boxlist])
-                img, all_boxes = self.transforms(img, all_boxes)
+                imgs, all_boxes = self.transforms(imgs, all_boxes)
                 resized_boxes = split_boxlist(
                     all_boxes, (targets_len, targets_len + len(pre_compute_boxlist)))
                 target = resized_boxes[0]
@@ -187,9 +201,12 @@ class VGDataset(torch.utils.data.Dataset):
                 pre_compute_boxlist = resized_boxes[1]
                 target = (target, pre_compute_boxlist)
             else:
-                img, target = self.transforms(img, target)
+                imgs, target = self.transforms(imgs, target)
 
-        return img, target, index
+        if self.video_input:
+            return imgs, target, index
+
+        return imgs[-1], target, index
 
     def get_statistics(self):
         fg_matrix, bg_matrix, rel_counter_init = get_VG_statistics(self,
