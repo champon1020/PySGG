@@ -351,6 +351,72 @@ test_vctree_ag:
 		OUTPUT_DIR ./checkpoint/ag/vctree/sgdet-VCTreePredictor
 
 
+.PHONY: bench_motif_ag
+bench_motif_ag:
+	python -m torch.distributed.launch --master_port 10028 --nproc_per_node=1 tools/relation_test_net.py \
+		--config-file "configs/e2e_relation_X_101_32_8_FPN_1x.yaml" \
+		--dataset "ag" \
+		TEST.IMS_PER_BATCH 1 \
+		TEST.BENCHMARK True \
+		DATASETS.TRAIN "('AG_train',)" \
+		DATASETS.VAL "('AG_test',)" \
+		DATASETS.TEST "('AG_test',)" \
+		MODEL.ROI_BOX_HEAD.NUM_CLASSES 37 \
+		MODEL.ROI_ATTRIBUTE_HEAD.NUM_ATTRIBUTES 1 \
+		MODEL.ROI_RELATION_HEAD.NUM_CLASSES 27 \
+		MODEL.ROI_RELATION_HEAD.USE_GT_BOX False \
+		MODEL.ROI_RELATION_HEAD.USE_GT_OBJECT_LABEL False \
+		MODEL.ROI_RELATION_HEAD.PREDICTOR "MotifPredictor" \
+		MODEL.ROI_RELATION_HEAD.FREQUENCY_BAIS True \
+		MODEL.WEIGHT ./checkpoint/ag/motif/sgdet-MotifPredictor/model_final.pth \
+		GLOVE_DIR datasets/glove \
+		OUTPUT_DIR ./checkpoint/ag/motif/sgdet-MotifPredictor
+
+
+.PHONY: bench_gpsnet_ag
+bench_gpsnet_ag:
+	python -m torch.distributed.launch --master_port 10028 --nproc_per_node=1 tools/relation_test_net.py \
+		--config-file "configs/e2e_relation_X_101_32_8_FPN_1x.yaml" \
+		--dataset "ag" \
+		TEST.IMS_PER_BATCH 1 \
+		TEST.BENCHMARK True \
+		DATASETS.TRAIN "('AG_train',)" \
+		DATASETS.VAL "('AG_test',)" \
+		DATASETS.TEST "('AG_test',)" \
+		MODEL.ROI_BOX_HEAD.NUM_CLASSES 37 \
+		MODEL.ROI_ATTRIBUTE_HEAD.NUM_ATTRIBUTES 1 \
+		MODEL.ROI_RELATION_HEAD.NUM_CLASSES 27 \
+		MODEL.ROI_RELATION_HEAD.USE_GT_BOX False \
+		MODEL.ROI_RELATION_HEAD.USE_GT_OBJECT_LABEL False \
+		MODEL.ROI_RELATION_HEAD.PREDICTOR "GPSNetPredictor" \
+		MODEL.ROI_RELATION_HEAD.FREQUENCY_BAIS True \
+		MODEL.WEIGHT ./checkpoint/ag/gpsnet/sgdet-GPSNetPredictor/model_final.pth \
+		GLOVE_DIR datasets/glove \
+		OUTPUT_DIR ./checkpoint/ag/gpsnet/sgdet-GPSNetPredictor
+
+
+.PHONY: bench_vctree_ag
+bench_vctree_ag:
+	python -m torch.distributed.launch --master_port 10028 --nproc_per_node=1 tools/relation_test_net.py \
+		--config-file "configs/e2e_relation_X_101_32_8_FPN_1x.yaml" \
+		--dataset "ag" \
+		TEST.IMS_PER_BATCH 1 \
+		TEST.BENCHMARK True \
+		DATASETS.TRAIN "('AG_train',)" \
+		DATASETS.VAL "('AG_test',)" \
+		DATASETS.TEST "('AG_test',)" \
+		MODEL.ROI_BOX_HEAD.NUM_CLASSES 37 \
+		MODEL.ROI_ATTRIBUTE_HEAD.NUM_ATTRIBUTES 1 \
+		MODEL.ROI_RELATION_HEAD.NUM_CLASSES 27 \
+		MODEL.ROI_RELATION_HEAD.USE_GT_BOX False \
+		MODEL.ROI_RELATION_HEAD.USE_GT_OBJECT_LABEL False \
+		MODEL.ROI_RELATION_HEAD.PREDICTOR "VCTreePredictor" \
+		MODEL.ROI_RELATION_HEAD.FREQUENCY_BAIS True \
+		MODEL.WEIGHT ./checkpoint/ag/vctree/sgdet-VCTreePredictor/model_final.pth \
+		GLOVE_DIR datasets/glove \
+		OUTPUT_DIR ./checkpoint/ag/vctree/sgdet-VCTreePredictor
+
+
 # test on VidVRD
 .PHONY: test_motif_vidvrd
 test_motif_vidvrd:

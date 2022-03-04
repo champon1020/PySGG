@@ -801,6 +801,7 @@ _C.TEST.RELATION.LATER_NMS_PREDICTION_THRES = 0.3
 _C.TEST.RELATION.SYNC_GATHER = True
 
 _C.TEST.ALLOW_LOAD_FROM_CACHE = False
+_C.TEST.BENCHMARK = False
 # ---------------------------------------------------------------------------- #
 # Misc options
 # ---------------------------------------------------------------------------- #

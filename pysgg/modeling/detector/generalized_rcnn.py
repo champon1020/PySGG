@@ -25,12 +25,13 @@ class GeneralizedRCNN(nn.Module):
 
     def __init__(self, cfg):
         super(GeneralizedRCNN, self).__init__()
+        self.bench = cfg.TEST.BENCHMARK
         self.cfg = cfg.clone()
         self.backbone = build_backbone(cfg)
         self.rpn = build_rpn(cfg, self.backbone.out_channels)
         self.roi_heads = build_roi_heads(cfg, self.backbone.out_channels)
 
-    def forward(self, images, targets=None, logger=None):
+    def forward(self, images, targets=None, logger=None, bench=False):
         """
         Arguments:
             images (list[Tensor] or ImageList): images to be processed
@@ -65,5 +66,8 @@ class GeneralizedRCNN(nn.Module):
                 # During the relationship training stage, the rpn_head should be fixed, and no loss.
                 losses.update(proposal_losses)
             return losses
+
+        if self.bench:
+            return [result[0].bbox, result[0].get_field("pred_rel_labels")]
 
         return result

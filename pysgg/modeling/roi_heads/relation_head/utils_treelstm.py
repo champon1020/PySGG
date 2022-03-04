@@ -43,7 +43,7 @@ class BidirectionalTreeLSTM(nn.Module):
     def forward(self, tree, features, num_obj):
         foreward_output = self.treeLSTM_foreward(tree, features, num_obj)
         backward_output = self.treeLSTM_backward(tree, features, num_obj)
-    
+
         final_output = torch.cat((foreward_output, backward_output), 1)
 
         return final_output
@@ -119,7 +119,7 @@ class BiTreeLSTM_Foreward(nn.Module):
     def node_forward(self, feat_inp, left_c, right_c, left_h, right_h, dropout_mask):
         projected_x = self.px(feat_inp)
         ioffu = self.ioffux(feat_inp) + self.ioffuh_left(left_h) + self.ioffuh_right(right_h)
-        i, o, f_l, f_r, u, r = torch.split(ioffu, ioffu.size(1) // 6, dim=1)
+        i, o, f_l, f_r, u, r = torch.split(ioffu, int(ioffu.size(1) // 6), dim=1)
         i, o, f_l, f_r, u, r = torch.sigmoid(i), torch.sigmoid(o), torch.sigmoid(f_l), torch.sigmoid(f_r), torch.tanh(u), torch.sigmoid(r)
 
         c = torch.mul(i, u) + torch.mul(f_l, left_c) + torch.mul(f_r, right_c)
@@ -160,16 +160,16 @@ class BiTreeLSTM_Foreward(nn.Module):
             right_c = torch.tensor([0.0] * self.h_dim, device=features.device).float().view(1,-1)
             right_h = torch.tensor([0.0] * self.h_dim, device=features.device).float().view(1,-1)
             # Only being used in decoder network
-            if self.is_pass_embed: 
+            if self.is_pass_embed:
                 right_embed = self.embed_layer.weight[0]
         else:
             right_c = tree.right_child.state_c
             right_h = tree.right_child.state_h
             # Only being used in decoder network
-            if self.is_pass_embed: 
+            if self.is_pass_embed:
                 right_embed = tree.right_child.embeded_label
         # Only being used in decoder network
-        if self.is_pass_embed: 
+        if self.is_pass_embed:
             next_feature = torch.cat((features[tree.index].view(1, -1), left_embed.view(1,-1), right_embed.view(1,-1)), 1)
         else:
             next_feature = features[tree.index].view(1, -1)
@@ -179,7 +179,7 @@ class BiTreeLSTM_Foreward(nn.Module):
         tree.state_h = h
         # record label prediction
         # Only being used in decoder network
-        if self.is_pass_embed: 
+        if self.is_pass_embed:
             pass_embed_postprocess(h, self.embed_out_layer, self.embed_layer, tree, treelstm_io, self.training)
 
         # record hidden state
@@ -208,7 +208,7 @@ class BiTreeLSTM_Backward(nn.Module):
         self.px = nn.Linear(self.feat_dim, self.h_dim)
         self.iofux = nn.Linear(self.feat_dim, 5 * self.h_dim)
         self.iofuh = nn.Linear(self.h_dim, 5 * self.h_dim)
-        
+
         # initialization
         with torch.no_grad():
             block_orthogonal(self.px.weight, [self.h_dim, self.feat_dim])
@@ -223,10 +223,10 @@ class BiTreeLSTM_Backward(nn.Module):
             self.iofuh.bias[2 * self.h_dim:3 * self.h_dim].fill_(1.0)
 
     def node_backward(self, feat_inp, root_c, root_h, dropout_mask):
-        
+
         projected_x = self.px(feat_inp)
         iofu = self.iofux(feat_inp) + self.iofuh(root_h)
-        i, o, f, u, r = torch.split(iofu, iofu.size(1) // 5, dim=1)
+        i, o, f, u, r = torch.split(iofu, int(iofu.size(1) // 5), dim=1)
         i, o, f, u, r = torch.sigmoid(i), torch.sigmoid(o), torch.sigmoid(f), torch.tanh(u), torch.sigmoid(r)
 
         c = torch.mul(i, u) + torch.mul(f, root_c)
@@ -266,7 +266,7 @@ class BiTreeLSTM_Backward(nn.Module):
         tree.state_h_backward = h
         # record label prediction
         # Only being used in decoder network
-        if self.is_pass_embed: 
+        if self.is_pass_embed:
             pass_embed_postprocess(h, self.embed_out_layer, self.embed_layer, tree, treelstm_io, self.training)
 
         # record hidden state
@@ -274,7 +274,7 @@ class BiTreeLSTM_Backward(nn.Module):
             treelstm_io.hidden = h.view(1, -1)
         else:
             treelstm_io.hidden = torch.cat((treelstm_io.hidden, h.view(1, -1)), 0)
- 
+
         treelstm_io.order[tree.index] = treelstm_io.order_count
         treelstm_io.order_count += 1
 

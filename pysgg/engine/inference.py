@@ -14,6 +14,10 @@ from ..utils.comm import synchronize
 from ..utils.timer import Timer, get_time_str
 from ..structures.bounding_box import BoxList
 
+from pysgg.utils.flop_count import flop_count, fmt_res
+from tqdm import tqdm
+import numpy as np
+
 
 def compute_on_dataset(model, data_loader, device, synchronize_gather=True, timer=None, logger=None):
     """
@@ -35,6 +39,17 @@ def compute_on_dataset(model, data_loader, device, synchronize_gather=True, time
             targets = [target.to(device) for target in targets]
             if timer:
                 timer.tic()
+
+            if cfg.TEST.BENCHMARK:
+                tmp = []
+                for _ in tqdm(range(10)):
+                    img = images.tensors[0]
+                    inputs = [img.to(cfg.MODEL.DEVICE)]
+                    res = flop_count(model, (inputs,))
+                    tmp.append(sum(res.values()))
+                print("flops", fmt_res(np.array(tmp)))
+                exit(1)
+
             if cfg.TEST.BBOX_AUG.ENABLED:
                 output = im_detect_bbox_aug(model, images, device)
             else:
