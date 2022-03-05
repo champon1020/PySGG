@@ -417,6 +417,30 @@ bench_vctree_ag:
 		OUTPUT_DIR ./checkpoint/ag/vctree/sgdet-VCTreePredictor
 
 
+.PHONY: bench_transformer_ag
+bench_transformer_ag:
+	python -m torch.distributed.launch --master_port 10028 --nproc_per_node=1 tools/relation_test_net.py \
+		--config-file "configs/e2e_relation_X_101_32_8_FPN_1x.yaml" \
+		--dataset "ag" \
+		SOLVER.IMS_PER_BATCH 1 \
+		TEST.IMS_PER_BATCH 1 \
+		TEST.BENCHMARK True \
+		DATASETS.TRAIN "('AG_train',)" \
+		DATASETS.VAL "('AG_test',)" \
+		DATASETS.TEST "('AG_test',)" \
+		MODEL.ROI_BOX_HEAD.NUM_CLASSES 37 \
+		MODEL.ROI_ATTRIBUTE_HEAD.NUM_ATTRIBUTES 1 \
+		MODEL.ROI_RELATION_HEAD.NUM_CLASSES 27 \
+		MODEL.ROI_RELATION_HEAD.USE_GT_BOX False \
+		MODEL.ROI_RELATION_HEAD.USE_GT_OBJECT_LABEL False \
+		MODEL.ROI_RELATION_HEAD.PREDICTOR "TransformerPredictor" \
+		MODEL.ROI_RELATION_HEAD.FREQUENCY_BAIS True \
+		MODEL.PRETRAINED_DETECTOR_CKPT ./checkpoint/pretrained_faster_rcnn/vidvrd/model_final.pth \
+		GLOVE_DIR datasets/glove \
+		OUTPUT_DIR ./checkpoint/vidvrd/transformer/ \
+		VIDEO_INPUT True
+
+
 # test on VidVRD
 .PHONY: test_motif_vidvrd
 test_motif_vidvrd:
